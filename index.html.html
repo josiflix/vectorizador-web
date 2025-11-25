@@ -213,27 +213,71 @@
 
         <main class="flex-1 relative flex flex-col bg-[#0d0d0d]">
             
-            <div class="h-10 border-b border-white/5 flex items-center justify-center gap-4 bg-[#1c1c1e]">
+            <div class="h-10 border-b border-white/5 flex items-center justify-center gap-4 bg-[#1c1c1e] z-10 sticky top-0">
                 <button onclick="setView('original')" class="text-xs text-gray-400 hover:text-white px-3 py-1 rounded hover:bg-white/5 transition-colors" id="tabOriginal">Original</button>
                 <button onclick="setView('preview')" class="text-xs text-gray-400 hover:text-white px-3 py-1 rounded hover:bg-white/5 transition-colors" id="tabPreview">Pre-Procesado</button>
                 <button onclick="setView('vector')" class="text-xs font-bold text-blue-500 bg-blue-500/10 px-3 py-1 rounded transition-colors" id="tabVector">Vector Final</button>
             </div>
 
-            <div class="flex-1 overflow-auto flex items-center justify-center p-8 checkerboard relative" id="workspace">
+            <div class="flex-1 overflow-y-auto checkerboard relative" id="workspace">
                 
-                <div id="placeholder" class="text-center p-12 border-2 border-dashed border-white/10 rounded-3xl hover:border-blue-500/50 transition-colors cursor-pointer" onclick="document.getElementById('fileInput').click()">
-                    <i class="fa-solid fa-cloud-arrow-up text-4xl text-white/20 mb-4"></i>
-                    <h2 class="text-lg font-medium text-white/60">Arrastra tu imagen aquí</h2>
-                    <p class="text-sm text-white/30 mt-2">Soporta JPG, PNG (Transparencias OK)</p>
+                <div class="min-h-full flex flex-col">
+                    <div class="flex-1 flex items-center justify-center p-8 min-h-[500px]">
+                        
+                        <div id="placeholder" class="text-center p-12 border-2 border-dashed border-white/10 rounded-3xl hover:border-blue-500/50 transition-colors cursor-pointer bg-[#1c1c1e]/80 backdrop-blur-sm" onclick="document.getElementById('fileInput').click()">
+                            <i class="fa-solid fa-cloud-arrow-up text-4xl text-white/20 mb-4"></i>
+                            <h2 class="text-lg font-medium text-white/60">Arrastra tu imagen aquí</h2>
+                            <p class="text-sm text-white/30 mt-2">Soporta JPG, PNG (Transparencias OK)</p>
+                        </div>
+
+                        <div id="layersContainer" class="hidden relative shadow-2xl rounded-lg overflow-hidden ring-1 ring-white/10 bg-white/5" style="max-width: 90%; max-height: 80vh;">
+                            <img id="imgOriginal" class="w-full h-full object-contain hidden">
+                            <canvas id="canvasProcess" class="w-full h-full object-contain hidden"></canvas>
+                            <div id="vectorOutput" class="w-full h-full bg-white/5 flex items-center justify-center"></div>
+                        </div>
+
+                    </div>
+
+                    <section class="w-full bg-[#1c1c1e] border-t border-white/10 py-12 px-6">
+                        <div class="max-w-4xl mx-auto text-gray-400">
+                            <h1 class="text-2xl font-bold text-white mb-6">Vectorizador de Imágenes Online para Diseñadores</h1>
+                            
+                            <div class="grid md:grid-cols-2 gap-8 text-sm leading-relaxed">
+                                <div>
+                                    <h2 class="text-white font-semibold mb-2 text-base">¿Cómo vectorizar una imagen JPG o PNG?</h2>
+                                    <p class="mb-4">
+                                        Nuestra herramienta utiliza algoritmos de trazado avanzados para convertir píxeles en nodos vectoriales limpios. Simplemente arrastra tu imagen, ajusta la simplificación de curvas y descarga tu archivo <strong>SVG compatible con Affinity Designer</strong>, Adobe Illustrator y Corel Draw.
+                                    </p>
+
+                                    <h2 class="text-white font-semibold mb-2 text-base">Ideal para Logotipos y Bocetos</h2>
+                                    <p>
+                                        Recupera logotipos antiguos de baja resolución o digitaliza tus bocetos a mano alzada. El motor de trazado ignora el ruido y suaviza las líneas para un acabado profesional listo para imprenta o corte láser.
+                                    </p>
+                                </div>
+                                
+                                <div>
+                                    <h2 class="text-white font-semibold mb-2 text-base">Alternativa a Image Trace</h2>
+                                    <p class="mb-4">
+                                        Si eres usuario de Affinity Designer V2 y echas de menos la función de calco de imagen (Image Trace), esta herramienta es tu solución. Funciona directamente en el navegador, sin instalar nada y utilizando la potencia de tu GPU para el renderizado.
+                                    </p>
+
+                                    <h2 class="text-white font-semibold mb-2 text-base">Formatos Soportados</h2>
+                                    <ul class="list-disc pl-4 space-y-1">
+                                        <li>Entrada: JPG, PNG, BMP (Con o sin transparencia)</li>
+                                        <li>Salida: SVG Vectorial (Scalable Vector Graphics)</li>
+                                        <li>Privacidad: El procesamiento se realiza localmente.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <p class="text-center text-xs mt-12 opacity-40">
+                                © 2025 PolyKit Studio. Diseñado para potenciar tu flujo de trabajo creativo.
+                            </p>
+                        </div>
+                    </section>
                 </div>
 
-                <div id="layersContainer" class="hidden relative shadow-2xl rounded-lg overflow-hidden ring-1 ring-white/10 bg-white/5" style="max-width: 90%; max-height: 90%;">
-                    <img id="imgOriginal" class="w-full h-full object-contain hidden">
-                    <canvas id="canvasProcess" class="w-full h-full object-contain hidden"></canvas>
-                    <div id="vectorOutput" class="w-full h-full bg-white/5 flex items-center justify-center"></div>
-                </div>
-
-                <div id="loader" class="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center">
+                <div id="loader" class="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center h-full">
                     <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
                     <div class="text-white font-medium">Vectorizando...</div>
                     <div class="text-white/40 text-sm mt-1">Optimizando curvas</div>
@@ -241,7 +285,7 @@
 
             </div>
 
-            <div class="h-6 bg-[#1c1c1e] border-t border-white/5 flex items-center px-4 justify-between text-[10px] text-gray-500">
+            <div class="h-6 bg-[#1c1c1e] border-t border-white/5 flex items-center px-4 justify-between text-[10px] text-gray-500 z-20">
                 <span id="statusInfo">Esperando imagen...</span>
                 <span>Affinity Designer Compatible</span>
             </div>
@@ -254,18 +298,16 @@
         let svgString = "";
         let currentView = 'vector';
 
-        // DOM Elements
         const canvas = document.getElementById('canvasProcess');
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         const vectorOutput = document.getElementById('vectorOutput');
         const loader = document.getElementById('loader');
         
-        // Configuration
         const config = {
-            scale: 2, // Upscaling factor
+            scale: 2,
             colors: 16,
             blur: 0,
-            noise: 10, // px
+            noise: 10,
             contrast: 0
         };
 
@@ -285,7 +327,7 @@
         document.getElementById('contrast').addEventListener('input', (e) => {
             config.contrast = parseInt(e.target.value);
             document.getElementById('valContrast').innerText = config.contrast;
-            applyFilters(); // Live preview
+            applyFilters(); 
         });
 
         // Drag & Drop
@@ -310,11 +352,7 @@
                     document.getElementById('placeholder').classList.add('hidden');
                     document.getElementById('layersContainer').classList.remove('hidden');
                     document.getElementById('imgOriginal').src = rawImage.src;
-                    
-                    // Preparar canvas inicial
                     applyFilters();
-                    
-                    // Auto-procesar
                     processVector();
                     document.getElementById('btnDownload').disabled = false;
                 }
@@ -322,21 +360,15 @@
             reader.readAsDataURL(file);
         }
 
-        // Paso 1: Aplicar filtros y upscale (Mejora la calidad drásticamente)
         function applyFilters() {
             if(!rawImage.src) return;
-
-            // Ajustar tamaño del canvas con el upscaling
             const w = rawImage.width * config.scale;
             const h = rawImage.height * config.scale;
             canvas.width = w;
             canvas.height = h;
 
-            // Dibujar con suavizado
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
-            
-            // Filtros CSS en el contexto (Contraste/Brillo)
             let filterString = `contrast(${100 + config.contrast}%)`;
             ctx.filter = filterString;
             
@@ -348,12 +380,11 @@
             if(currentView === 'preview') applyFilters();
         }
 
-        // Paso 2: Vectorizar
         function processVector() {
             if(!rawImage.src) return;
             
             loader.classList.remove('hidden');
-            applyFilters(); // Asegurar que el canvas está actualizado
+            applyFilters();
             
             const traceOptions = {
                 numberofcolors: config.colors,
