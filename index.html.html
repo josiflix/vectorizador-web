@@ -193,7 +193,7 @@
                 <div id="lockedState" class="text-center">
                     <p class="text-[10px] text-gray-400 mb-2">La descarga vectorial es una función Pro</p>
                     <button onclick="goToPayment()" class="w-full bg-[#FFD700] hover:bg-[#F4C430] text-black py-2 rounded-lg text-sm font-bold transition-all shadow-lg mb-2">
-                        <i class="fa-solid fa-bolt mr-1"></i> Desbloquear (4.99€)
+                        <i class="fa-solid fa-bolt mr-1"></i> Desbloquear (1.99€)
                     </button>
                     <div class="text-[10px] text-gray-500 cursor-pointer hover:text-white" onclick="validateLicense()">
                         ¿Ya tienes licencia? <span class="underline">Validar aquí</span>
@@ -447,7 +447,7 @@
 
         // --- LÓGICA DE MONETIZACIÓN (LEMON SQUEEZY) ---
 
-        // IMPORTANTE: Pon aquí tu enlace de producto real de Lemon Squeezy cuando lo tengas
+        // IMPORTANTE: Recuerda poner aquí tu enlace real cuando crees el producto en Lemon Squeezy
         const CHECKOUT_URL = "https://tu-tienda.lemonsqueezy.com/checkout/buy/TU-CODIGO";
 
         function goToPayment() {
@@ -466,7 +466,7 @@
 
         function validateLicense() {
             const key = prompt("Introduce tu clave de licencia:");
-            // Simulación para que puedas probar: Acepta cualquier clave que empiece por TEST
+            // Simulación: Acepta cualquier clave que empiece por TEST para que puedas probarlo
             if (key && (key.startsWith("TEST") || key.length > 5)) {
                 unlockApp();
                 localStorage.setItem('isProUser', 'true');
