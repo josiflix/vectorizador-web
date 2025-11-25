@@ -3,10 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vectorizador Pro - Studio Edition</title>
+    
+    <title>Vectorizador Pro - Convertir JPG a SVG Online (Gratis)</title>
+    <meta name="description" content="Herramienta profesional gratuita para vectorizar imágenes, logos y bocetos. Convierte JPG y PNG a SVG editable. Alternativa a Image Trace para Affinity Designer.">
+    <meta name="keywords" content="vectorizar imagen, jpg a svg, png a svg, vectorizador online, image trace affinity designer, convertir logo a vector, herramienta vector gratis">
+    <meta name="author" content="PolyKit Studio">
+
+    <meta name="google-site-verification" content="PEGA_AQUI_TU_CODIGO_DE_GOOGLE" />
+
+    <meta property="og:title" content="Vectorizador Pro - Studio Edition">
+    <meta property="og:description" content="Convierte cualquier imagen a vectores SVG en segundos. Calidad profesional.">
+    <meta property="og:type" content="website">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Librería de trazado -->
     <script src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.min.js"></script>
 
     <style>
@@ -86,7 +96,6 @@
 </head>
 <body class="h-screen flex flex-col">
 
-    <!-- TOP BAR -->
     <header class="h-12 border-b border-white/10 flex items-center px-4 justify-between bg-[#1c1c1e] z-20">
         <div class="flex items-center gap-3">
             <i class="fa-solid fa-layer-group text-blue-500"></i>
@@ -100,11 +109,9 @@
 
     <div class="flex-1 flex overflow-hidden">
         
-        <!-- SIDEBAR IZQUIERDA: CONTROLES -->
         <aside class="w-80 studio-panel flex flex-col z-10 border-r border-white/5">
             <div class="p-5 space-y-6 overflow-y-auto custom-scrollbar">
                 
-                <!-- Sección 1: Presets -->
                 <div>
                     <label class="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-3 block">Modo de Trazado</label>
                     <div class="grid grid-cols-3 gap-2">
@@ -120,7 +127,6 @@
                     </div>
                 </div>
 
-                <!-- Sección 2: Pre-Procesado (La clave de la calidad) -->
                 <div class="bg-white/5 p-3 rounded-xl border border-white/5">
                     <label class="text-[10px] uppercase font-bold text-blue-400 tracking-wider mb-2 block flex justify-between">
                         Pre-Procesado <i class="fa-solid fa-wand-magic-sparkles"></i>
@@ -146,7 +152,6 @@
                     </div>
                 </div>
 
-                <!-- Sección 3: Detalles del Vector -->
                 <div>
                     <label class="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-3 block">Motor de Vectores</label>
                     
@@ -183,48 +188,50 @@
 
             </div>
             
-            <div class="p-4 border-t border-white/10 bg-[#151516]">
-                <button onclick="downloadSVG()" id="btnDownload" disabled class="w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                    Exportar SVG
-                </button>
+            <div class="p-4 border-t border-white/10 bg-[#151516] space-y-3">
+                <div id="lockedState" class="text-center">
+                    <p class="text-[10px] text-gray-400 mb-2">La descarga vectorial es una función Pro</p>
+                    <button onclick="goToStripe()" class="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-black py-2 rounded-lg text-sm font-bold transition-all shadow-lg shadow-yellow-900/20 mb-2">
+                        <i class="fa-solid fa-crown mr-1"></i> Desbloquear (2.99€)
+                    </button>
+                    <div class="text-[10px] text-gray-500 cursor-pointer hover:text-white" onclick="askLicense()">
+                        ¿Ya tienes clave? <span class="underline">Ingrésala aquí</span>
+                    </div>
+                </div>
+
+                <div id="unlockedState" class="hidden">
+                    <div class="flex items-center justify-center gap-2 text-green-500 text-xs font-bold mb-2">
+                        <i class="fa-solid fa-check-circle"></i> Licencia Pro Activa
+                    </div>
+                    <button onclick="downloadSVG()" id="btnDownload" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-blue-900/20">
+                        <i class="fa-solid fa-download mr-1"></i> Exportar SVG
+                    </button>
+                </div>
             </div>
         </aside>
 
-        <!-- ÁREA CENTRAL -->
         <main class="flex-1 relative flex flex-col bg-[#0d0d0d]">
             
-            <!-- Barra de Herramientas -->
             <div class="h-10 border-b border-white/5 flex items-center justify-center gap-4 bg-[#1c1c1e]">
                 <button onclick="setView('original')" class="text-xs text-gray-400 hover:text-white px-3 py-1 rounded hover:bg-white/5 transition-colors" id="tabOriginal">Original</button>
                 <button onclick="setView('preview')" class="text-xs text-gray-400 hover:text-white px-3 py-1 rounded hover:bg-white/5 transition-colors" id="tabPreview">Pre-Procesado</button>
                 <button onclick="setView('vector')" class="text-xs font-bold text-blue-500 bg-blue-500/10 px-3 py-1 rounded transition-colors" id="tabVector">Vector Final</button>
             </div>
 
-            <!-- Canvas Container -->
             <div class="flex-1 overflow-auto flex items-center justify-center p-8 checkerboard relative" id="workspace">
                 
-                <!-- Placeholder -->
                 <div id="placeholder" class="text-center p-12 border-2 border-dashed border-white/10 rounded-3xl hover:border-blue-500/50 transition-colors cursor-pointer" onclick="document.getElementById('fileInput').click()">
                     <i class="fa-solid fa-cloud-arrow-up text-4xl text-white/20 mb-4"></i>
                     <h2 class="text-lg font-medium text-white/60">Arrastra tu imagen aquí</h2>
                     <p class="text-sm text-white/30 mt-2">Soporta JPG, PNG (Transparencias OK)</p>
                 </div>
 
-                <!-- Capas de Imagen (Se superponen pero solo se ve una) -->
                 <div id="layersContainer" class="hidden relative shadow-2xl rounded-lg overflow-hidden ring-1 ring-white/10 bg-white/5" style="max-width: 90%; max-height: 90%;">
-                    
-                    <!-- 1. Original -->
                     <img id="imgOriginal" class="w-full h-full object-contain hidden">
-                    
-                    <!-- 2. Pre-Procesado (Canvas oculto usado para el motor) -->
                     <canvas id="canvasProcess" class="w-full h-full object-contain hidden"></canvas>
-                    
-                    <!-- 3. Resultado Vectorial -->
                     <div id="vectorOutput" class="w-full h-full bg-white/5 flex items-center justify-center"></div>
-                    
                 </div>
 
-                <!-- Loader -->
                 <div id="loader" class="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center">
                     <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
                     <div class="text-white font-medium">Vectorizando...</div>
@@ -233,33 +240,10 @@
 
             </div>
 
-            <!-- Status Bar -->
             <div class="h-6 bg-[#1c1c1e] border-t border-white/5 flex items-center px-4 justify-between text-[10px] text-gray-500">
                 <span id="statusInfo">Esperando imagen...</span>
                 <span>Affinity Designer Compatible</span>
             </div>
-<div class="p-4 border-t border-white/10 bg-[#151516] space-y-3">
-    
-    <div id="lockedState" class="text-center">
-        <p class="text-[10px] text-gray-400 mb-2">La descarga vectorial es una función Pro</p>
-        <button onclick="goToStripe()" class="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-black py-2 rounded-lg text-sm font-bold transition-all shadow-lg shadow-yellow-900/20 mb-2">
-            <i class="fa-solid fa-crown mr-1"></i> Desbloquear (2.99€)
-        </button>
-        <div class="text-[10px] text-gray-500 cursor-pointer hover:text-white" onclick="askLicense()">
-            ¿Ya tienes clave? <span class="underline">Ingrésala aquí</span>
-        </div>
-    </div>
-
-    <div id="unlockedState" class="hidden">
-        <div class="flex items-center justify-center gap-2 text-green-500 text-xs font-bold mb-2">
-            <i class="fa-solid fa-check-circle"></i> Licencia Pro Activa
-        </div>
-        <button onclick="downloadSVG()" id="btnDownload" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-blue-900/20">
-            <i class="fa-solid fa-download mr-1"></i> Exportar SVG
-        </button>
-    </div>
-
-</div>
         </main>
     </div>
 
@@ -352,13 +336,10 @@
             ctx.imageSmoothingQuality = 'high';
             
             // Filtros CSS en el contexto (Contraste/Brillo)
-            // Esto limpia la imagen ANTES de vectorizar
             let filterString = `contrast(${100 + config.contrast}%)`;
             ctx.filter = filterString;
             
             ctx.drawImage(rawImage, 0, 0, w, h);
-            
-            // Reset filter
             ctx.filter = 'none';
         }
 
@@ -373,32 +354,23 @@
             loader.classList.remove('hidden');
             applyFilters(); // Asegurar que el canvas está actualizado
             
-            // Configuración óptima para Imagetracer
-            // Ajustamos 'ltres' y 'qtres' para curvas más suaves
-            // 'pathomit' elimina ruido pequeño
             const traceOptions = {
                 numberofcolors: config.colors,
-                pathomit: config.noise * config.scale, // Escalar el ruido según el upscale
-                ltres: 1, // Error lineal (menor = más fiel pero más dentado)
-                qtres: 1, // Error cuadrático
-                scale: 1, // Ya escalamos el canvas, así que aquí es 1
+                pathomit: config.noise * config.scale,
+                ltres: 1, 
+                qtres: 1, 
+                scale: 1, 
                 strokewidth: 0,
                 viewbox: true,
-                linefilter: true // Suaviza líneas rectas
+                linefilter: true
             };
 
-            // Pequeño delay para que la UI respire
             setTimeout(() => {
-                // Trazar desde el CANVAS (que ya tiene los filtros y el upscale)
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                
-                // Usar ImageTracer directamente sobre los datos del canvas
                 const svgStr = ImageTracer.imagedataToSVG(imageData, traceOptions);
-                
                 svgString = svgStr;
                 vectorOutput.innerHTML = svgStr;
                 
-                // Ajustar visualización SVG
                 const svg = vectorOutput.querySelector('svg');
                 if(svg) {
                     svg.style.width = '100%';
@@ -411,22 +383,18 @@
             }, 50);
         }
 
-        // Gestión de Vistas (Tabs)
         function setView(view) {
             currentView = view;
             
-            // Ocultar todo
             document.getElementById('imgOriginal').classList.add('hidden');
             document.getElementById('canvasProcess').classList.add('hidden');
             document.getElementById('vectorOutput').classList.add('hidden');
             
-            // Desactivar botones
             ['tabOriginal', 'tabPreview', 'tabVector'].forEach(id => {
                 document.getElementById(id).classList.remove('bg-blue-500/10', 'text-blue-500', 'font-bold');
                 document.getElementById(id).classList.add('text-gray-400');
             });
 
-            // Activar actual
             const activeBtn = document.getElementById('tab' + view.charAt(0).toUpperCase() + view.slice(1));
             activeBtn.classList.remove('text-gray-400');
             activeBtn.classList.add('bg-blue-500/10', 'text-blue-500', 'font-bold');
@@ -434,21 +402,19 @@
             if(view === 'original') {
                 document.getElementById('imgOriginal').classList.remove('hidden');
             } else if (view === 'preview') {
-                applyFilters(); // Refrescar visualización
+                applyFilters();
                 document.getElementById('canvasProcess').classList.remove('hidden');
             } else {
                 document.getElementById('vectorOutput').classList.remove('hidden');
             }
         }
 
-        // Presets
         function setPreset(name) {
-            // Reset botones
             document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
             
             if(name === 'logo') {
                 document.getElementById('btnLogo').classList.add('active');
-                setSliders(4, 8, 10, 20); // Scale x4, 8 colors, +10 contrast, 20px noise
+                setSliders(4, 8, 10, 20);
             } else if (name === 'art') {
                 document.getElementById('btnArt').classList.add('active');
                 setSliders(2, 32, 0, 5);
@@ -472,42 +438,38 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'vector_studio_opticalh.svg';
+            a.download = 'vector_studio.svg';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
         }
-// --- LÓGICA DE MONETIZACIÓN ---
 
-function goToStripe() {
-    // Aquí pondrás tu enlace de Stripe real más tarde
-    alert("Aquí redirigiríamos a tu pasarela de pago (Stripe/LemonSqueezy).");
-    // window.open('https://buy.stripe.com/TU_ENLACE_AQUI', '_blank');
-}
+        // --- LÓGICA DE PAGO / LICENCIA ---
+        function goToStripe() {
+            alert("Redirigiendo a tu pasarela de pago...");
+            // window.open('https://ko-fi.com/tu-cuenta', '_blank');
+        }
 
-function askLicense() {
-    // Simulación simple de validación
-    const key = prompt("Introduce tu clave de licencia (Prueba con: STUDIO-2025):");
-    
-    if (key === "STUDIO-2025") {
-        unlockApp();
-    } else if (key) {
-        alert("Clave incorrecta. Intenta de nuevo.");
-    }
-}
+        function askLicense() {
+            const key = prompt("Introduce tu clave de licencia (Prueba con: STUDIO-2025):");
+            if (key === "STUDIO-2025") {
+                unlockApp();
+                localStorage.setItem('isProUser', 'true');
+            } else if (key) {
+                alert("Clave incorrecta.");
+            }
+        }
 
-function unlockApp() {
-    document.getElementById('lockedState').classList.add('hidden');
-    document.getElementById('unlockedState').classList.remove('hidden');
-    alert("¡Gracias! Funciones Pro desbloqueadas.");
-}
+        function unlockApp() {
+            document.getElementById('lockedState').classList.add('hidden');
+            document.getElementById('unlockedState').classList.remove('hidden');
+        }
 
-// Opcional: Auto-desbloqueo si vuelven de pagar (usando URL params)
-// Si la URL termina en ?paid=true, desbloqueamos automáticamente
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('paid') === 'true') {
-    unlockApp();
-}
+        // Persistencia
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('paid') === 'true' || localStorage.getItem('isProUser') === 'true') {
+            unlockApp();
+        }
     </script>
 </body>
 </html>
