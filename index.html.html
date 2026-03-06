@@ -1,524 +1,6 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Vectorizador Pro - Convertir JPG a SVG Online (Gratis)</title>
-    <meta name="description" content="Herramienta profesional gratuita para vectorizar imágenes con limpieza inteligente. Convierte JPG y PNG a SVG editable. Alternativa a Image Trace para Affinity Designer.">
-    <meta name="keywords" content="vectorizar imagen, jpg a svg, png a svg, vectorizador online, image trace affinity designer, convertir logo a vector, herramienta vector gratis">
-    <meta name="author" content="PolyKit Studio">
-
-    <meta name="google-site-verification" content="LkKW7oW0bGQtaSS5NndaEO_CVDqUAhx1czdIqlNtyvY" />
-
-    <meta property="og:title" content="Vectorizador Pro - Studio Edition">
-    <meta property="og:description" content="Convierte cualquier imagen a vectores SVG en segundos. Calidad profesional.">
-    <meta property="og:type" content="website">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.min.js"></script>
-    <script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
-
-    <style>
-        /* --- ESTÉTICA APPLE PRO (DARK) --- */
-        :root {
-            --bg-app: #0d0d0d;
-            --bg-panel: #1c1c1e;
-            --accent: #0A84FF;
-            --border: #333;
-            --text-muted: #86868b;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
-            background-color: var(--bg-app);
-            color: #f5f5f7;
-            overflow: hidden;
-        }
-
-        /* Paneles flotantes estilo macOS */
-        .studio-panel {
-            background: rgba(28, 28, 30, 0.75);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-
-        /* Controles deslizantes Pro */
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-            margin: 10px 0;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 18px; width: 18px;
-            border-radius: 50%;
-            background: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            margin-top: -7px;
-            cursor: grab;
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 4px;
-            background: #444;
-            border-radius: 2px;
-        }
-        input[type=range]:focus::-webkit-slider-runnable-track { background: var(--accent); }
-
-        /* Botones de Presets */
-        .preset-btn {
-            background: #2c2c2e;
-            border: 1px solid transparent;
-            color: #ccc;
-            transition: all 0.2s;
-        }
-        .preset-btn:hover { background: #3a3a3c; }
-        .preset-btn.active {
-            background: var(--accent);
-            color: white;
-            box-shadow: 0 0 15px rgba(10, 132, 255, 0.4);
-        }
-
-        /* Canvas Checkerboard */
-        .checkerboard {
-            background-color: #1e1e1e;
-            background-image: 
-                linear-gradient(45deg, #252525 25%, transparent 25%), 
-                linear-gradient(-45deg, #252525 25%, transparent 25%), 
-                linear-gradient(45deg, transparent 75%, #252525 75%), 
-                linear-gradient(-45deg, transparent 75%, #252525 75%);
-            background-size: 20px 20px;
-        }
-
-        /* Toggle Switch para opciones avanzadas */
-        .toggle-checkbox:checked {
-            right: 0;
-            border-color: #0A84FF;
-        }
-        .toggle-checkbox:checked + .toggle-label {
-            background-color: #0A84FF;
-        }
-    </style>
-</head>
-<body class="h-screen flex flex-col">
-
-    <header class="h-12 border-b border-white/10 flex items-center px-4 justify-between bg-[#1c1c1e] z-20">
-        <div class="flex items-center gap-3">
-            <i class="fa-solid fa-vector-square text-blue-500"></i>
-            <span class="font-semibold tracking-wide text-sm">Vectorizador <span class="opacity-50 font-light">Studio</span></span>
-        </div>
-        <button onclick="document.getElementById('fileInput').click()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1 rounded-full text-xs font-medium transition-colors">
-            <i class="fa-solid fa-plus mr-1"></i> Abrir Imagen
-        </button>
-        <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFile(event)">
-    </header>
-
-    <div class="flex-1 flex overflow-hidden">
-        
-        <aside class="w-80 studio-panel flex flex-col z-10 border-r border-white/5">
-            <div class="p-5 space-y-6 overflow-y-auto custom-scrollbar">
-                
-                <div>
-                    <label class="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-3 block">Estilo de Vector</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button onclick="setPreset('clean')" class="preset-btn active px-2 py-3 rounded-lg text-xs font-medium flex flex-col items-center gap-1" id="btnClean">
-                            <i class="fa-solid fa-shapes text-lg"></i> Plano
-                        </button>
-                        <button onclick="setPreset('detailed')" class="preset-btn px-2 py-3 rounded-lg text-xs font-medium flex flex-col items-center gap-1" id="btnDetailed">
-                            <i class="fa-solid fa-image text-lg"></i> Detalle
-                        </button>
-                        <button onclick="setPreset('sketch')" class="preset-btn px-2 py-3 rounded-lg text-xs font-medium flex flex-col items-center gap-1" id="btnSketch">
-                            <i class="fa-solid fa-pen-nib text-lg"></i> Boceto
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-white/5 p-3 rounded-xl border border-white/5">
-                    <label class="text-[10px] uppercase font-bold text-blue-400 tracking-wider mb-2 block flex justify-between">
-                        Smart Cleanup <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    </label>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <div class="flex justify-between text-xs text-gray-400">
-                                <span>Aplanar Colores (Posterize)</span>
-                                <span id="valColors" class="text-white">16</span>
-                            </div>
-                            <input type="range" id="colors" min="2" max="32" step="1" value="16" onchange="updatePreview()">
-                            <p class="text-[9px] text-gray-600">Menos colores = Vectores más limpios y sólidos.</p>
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-xs text-gray-400">
-                                <span>Eliminar Ruido (Suavizado)</span>
-                                <span id="valBlur" class="text-white">Bajo</span>
-                            </div>
-                            <input type="range" id="blur" min="0" max="10" value="2" onchange="updatePreview()">
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-xs text-gray-400">
-                                <span>Super-Resolución</span>
-                                <span id="valScale" class="text-white">2x</span>
-                            </div>
-                            <input type="range" id="scale" min="1" max="4" step="1" value="2" onchange="updatePreview()">
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-3 block">Geometría</label>
-                    <div class="space-y-4">
-                        <div>
-                            <div class="flex justify-between text-xs text-gray-400">
-                                <span>Suavizado de Curvas</span>
-                                <span id="valSmooth" class="text-white">Medio</span>
-                            </div>
-                            <input type="range" id="smooth" min="0" max="10" value="5">
-                        </div>
-                        
-                         <div>
-                            <div class="flex justify-between text-xs text-gray-400">
-                                <span>Umbral de Manchas</span>
-                                <span id="valSpeckle" class="text-white">16 px</span>
-                            </div>
-                            <input type="range" id="speckle" min="0" max="100" value="16">
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="processVector()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all active:scale-95 flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-bolt"></i> Vectorizar Ahora
-                </button>
-
-            </div>
-            
-            <div class="p-4 border-t border-white/10 bg-[#151516] space-y-3">
-                <div id="lockedState" class="text-center">
-                    <p class="text-[10px] text-gray-400 mb-2">Descarga SVG de alta calidad</p>
-                    <button onclick="goToPayment()" class="w-full bg-[#FFD700] hover:bg-[#F4C430] text-black py-2 rounded-lg text-sm font-bold transition-all shadow-lg mb-2">
-                        <i class="fa-solid fa-crown mr-1"></i> Desbloquear (1.99€)
-                    </button>
-                    <div class="text-[10px] text-gray-500 cursor-pointer hover:text-white" onclick="validateLicense()">
-                        ¿Ya tienes licencia? <span class="underline">Validar aquí</span>
-                    </div>
-                </div>
-
-                <div id="unlockedState" class="hidden">
-                    <div class="flex items-center justify-center gap-2 text-green-500 text-xs font-bold mb-2">
-                        <i class="fa-solid fa-check-circle"></i> Licencia Pro Activa
-                    </div>
-                    <button onclick="downloadSVG()" id="btnDownload" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-blue-900/20">
-                        <i class="fa-solid fa-download mr-1"></i> Exportar SVG
-                    </button>
-                </div>
-            </div>
-        </aside>
-
-        <main class="flex-1 relative flex flex-col bg-[#0d0d0d]">
-            
-            <div class="h-10 border-b border-white/5 flex items-center justify-center gap-4 bg-[#1c1c1e] z-10 sticky top-0">
-                <button onclick="setView('original')" class="text-xs text-gray-400 hover:text-white px-3 py-1 rounded hover:bg-white/5 transition-colors" id="tabOriginal">Original</button>
-                <button onclick="setView('preview')" class="text-xs text-gray-400 hover:text-white px-3 py-1 rounded hover:bg-white/5 transition-colors" id="tabPreview">Vista Limpia (Preview)</button>
-                <button onclick="setView('vector')" class="text-xs font-bold text-blue-500 bg-blue-500/10 px-3 py-1 rounded transition-colors" id="tabVector">Resultado Vectorial</button>
-            </div>
-
-            <div class="flex-1 overflow-y-auto checkerboard relative" id="workspace">
-                <div class="min-h-full flex flex-col">
-                    <div class="flex-1 flex items-center justify-center p-8 min-h-[500px]">
-                        
-                        <div id="placeholder" class="text-center p-12 border-2 border-dashed border-white/10 rounded-3xl hover:border-blue-500/50 transition-colors cursor-pointer bg-[#1c1c1e]/80 backdrop-blur-sm" onclick="document.getElementById('fileInput').click()">
-                            <i class="fa-solid fa-cloud-arrow-up text-4xl text-white/20 mb-4"></i>
-                            <h2 class="text-lg font-medium text-white/60">Sube tu Imagen</h2>
-                            <p class="text-sm text-white/30 mt-2">Optimizaremos los colores automáticamente</p>
-                        </div>
-
-                        <div id="layersContainer" class="hidden relative shadow-2xl rounded-lg overflow-hidden ring-1 ring-white/10 bg-white/5" style="max-width: 90%; max-height: 80vh;">
-                            <img id="imgOriginal" class="w-full h-full object-contain hidden">
-                            <canvas id="canvasProcess" class="w-full h-full object-contain hidden"></canvas>
-                            <div id="vectorOutput" class="w-full h-full bg-white/5 flex items-center justify-center"></div>
-                        </div>
-                    </div>
-
-                    <section class="w-full bg-[#1c1c1e] border-t border-white/10 py-12 px-6">
-                        <div class="max-w-4xl mx-auto text-gray-400 text-sm">
-                            <h1 class="text-xl font-bold text-white mb-4">Vectorizador Inteligente para Affinity & Illustrator</h1>
-                            <p class="mb-4">
-                                Esta herramienta utiliza un motor de <strong>pre-procesado de imagen</strong> para limpiar el ruido y aplanar los colores antes de la vectorización. Esto garantiza vectores SVG limpios, con menos nodos y listos para uso profesional en diseño gráfico, corte de vinilo y serigrafía.
-                            </p>
-                            <p class="text-xs opacity-40 text-center mt-8">© 2025 PolyKit Studio.</p>
-                        </div>
-                    </section>
-                </div>
-
-                <div id="loader" class="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center h-full">
-                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
-                    <div class="text-white font-medium mt-2">Procesando Imagen...</div>
-                    <div class="text-white/40 text-sm mt-1" id="loadingText">Analizando colores</div>
-                </div>
-            </div>
-
-            <div class="h-6 bg-[#1c1c1e] border-t border-white/5 flex items-center px-4 justify-between text-[10px] text-gray-500 z-20">
-                <span id="statusInfo">Listo</span>
-                <span>Smart Engine v2.0</span>
-            </div>
-        </main>
-    </div>
-
-    <script>
-        // --- MOTOR DE PROCESADO DE IMAGEN (LA MAGIA) ---
-        let rawImage = new Image();
-        let svgString = "";
-        let currentView = 'vector';
-
-        const canvas = document.getElementById('canvasProcess');
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        const vectorOutput = document.getElementById('vectorOutput');
-        const loader = document.getElementById('loader');
-        
-        const config = {
-            scale: 2,
-            colors: 16, // Cantidad de colores (Quantization)
-            blur: 2,    // Nivel de limpieza
-            smooth: 5,  // Suavizado de curvas (ImageTracer)
-            speckle: 16 // Eliminación de ruido pequeño
-        };
-
-        // Listeners
-        document.getElementById('scale').addEventListener('input', (e) => {
-            config.scale = parseInt(e.target.value);
-            document.getElementById('valScale').innerText = config.scale + 'x';
-            schedulePreview();
-        });
-        document.getElementById('colors').addEventListener('input', (e) => {
-            config.colors = parseInt(e.target.value);
-            document.getElementById('valColors').innerText = config.colors;
-            schedulePreview();
-        });
-        document.getElementById('blur').addEventListener('input', (e) => {
-            config.blur = parseInt(e.target.value);
-            document.getElementById('valBlur').innerText = config.blur === 0 ? "Off" : config.blur;
-            schedulePreview();
-        });
-        document.getElementById('smooth').addEventListener('input', (e) => {
-            config.smooth = parseInt(e.target.value);
-            document.getElementById('valSmooth').innerText = config.smooth;
-        });
-        document.getElementById('speckle').addEventListener('input', (e) => {
-            config.speckle = parseInt(e.target.value);
-            document.getElementById('valSpeckle').innerText = config.speckle + ' px';
-        });
-
-        // Debounce para que no se cuelgue al mover sliders rápido
-        let previewTimeout;
-        function schedulePreview() {
-            clearTimeout(previewTimeout);
-            previewTimeout = setTimeout(() => {
-                if(currentView === 'preview') processImagePipeline(false); // Solo procesar imagen, no trazar
-            }, 100);
-        }
-
-        // --- GESTIÓN DE ARCHIVOS ---
-        const workspace = document.getElementById('workspace');
-        workspace.addEventListener('dragover', (e) => e.preventDefault());
-        workspace.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const file = e.dataTransfer.files[0];
-            if(file && file.type.startsWith('image/')) loadFile(file);
-        });
-
-        function handleFile(e) {
-            if(e.target.files[0]) loadFile(e.target.files[0]);
-        }
-
-        function loadFile(file) {
-            document.getElementById('statusInfo').innerText = "Cargando...";
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                rawImage.src = event.target.result;
-                rawImage.onload = () => {
-                    document.getElementById('placeholder').classList.add('hidden');
-                    document.getElementById('layersContainer').classList.remove('hidden');
-                    document.getElementById('imgOriginal').src = rawImage.src;
-                    
-                    // Resetear vista
-                    setPreset('clean');
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // --- PIPELINE DE PROCESADO (Pixel Manipulation) ---
-        // Aquí es donde mejoramos la imagen ANTES de vectorizar
-        function processImagePipeline(doTrace = true) {
-            if(!rawImage.src) return;
-            
-            if(doTrace) {
-                loader.classList.remove('hidden');
-                document.getElementById('loadingText').innerText = "Optimizando píxeles...";
-            }
-
-            // 1. Setup Canvas con Upscaling
-            const w = rawImage.width * config.scale;
-            const h = rawImage.height * config.scale;
-            canvas.width = w;
-            canvas.height = h;
-
-            // Dibujar imagen original escalada
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(rawImage, 0, 0, w, h);
-
-            // Obtener datos de píxeles para manipularlos
-            const imageData = ctx.getImageData(0, 0, w, h);
-            const data = imageData.data;
-
-            // 2. Aplicar Blur Inteligente (Simple Box Blur para velocidad)
-            // Esto elimina el ruido JPG que causa vectores sucios
-            if (config.blur > 0) {
-                stackBlur(imageData, config.blur); 
-            }
-
-            // 3. Cuantización de Color (Posterization simple)
-            // Redondea los colores para crear áreas planas sólidas
-            if (config.colors < 256) {
-                const factor = 256 / config.colors;
-                for (let i = 0; i < data.length; i += 4) {
-                    data[i]     = Math.floor(data[i] / factor) * factor;     // R
-                    data[i + 1] = Math.floor(data[i + 1] / factor) * factor; // G
-                    data[i + 2] = Math.floor(data[i + 2] / factor) * factor; // B
-                }
-            }
-
-            // Poner los datos modificados en el canvas
-            ctx.putImageData(imageData, 0, 0);
-
-            // 4. Vectorizar (Si se solicita)
-            if (doTrace) {
-                setTimeout(() => {
-                    document.getElementById('loadingText').innerText = "Generando vectores...";
-                    runImageTracer();
-                }, 50);
-            }
-        }
-
-        // Algoritmo de Blur rápido (Aproximación StackBlur simplificada para no cargar librerías extra)
-        function stackBlur(imageData, radius) {
-            // Implementación muy básica de desenfoque para limpiar ruido
-            // Nota: En un entorno de producción real usaríamos una librería WASM, 
-            // pero esto mejora drásticamente el resultado vs nada.
-            // Por simplicidad del código inline, usamos el filtro CSS del contexto que es nativo y rápido
-            // Volvemos a dibujar con filtro
-            ctx.filter = `blur(${radius}px)`;
-            ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
-            ctx.filter = 'none';
-        }
-
-        function runImageTracer() {
-            // Configuración avanzada de ImageTracer para resultados "clean"
-            // ltres/qtres más altos = menos nodos, curvas más suaves
-            const traceOptions = {
-                ltres: config.smooth * 0.5, // Umbral lineal
-                qtres: config.smooth * 0.5, // Umbral cuadrático (curvas)
-                pathomit: config.speckle * config.scale, // Ignorar manchas pequeñas
-                rightangleenhance: true, // Intentar hacer esquinas rectas
-                colorsampling: 0, // Usar determinista
-                numberofcolors: config.colors,
-                mincolorratio: 0.02, // Ignorar colores que aparecen muy poco
-                strokewidth: 0, // Solo rellenos
-                viewbox: true
-            };
-
-            const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const svgStr = ImageTracer.imagedataToSVG(data, traceOptions);
-            
-            svgString = svgStr;
-            vectorOutput.innerHTML = svgStr;
-            
-            const svg = vectorOutput.querySelector('svg');
-            if(svg) {
-                svg.style.width = '100%';
-                svg.style.height = '100%';
-            }
-
-            setView('vector');
-            loader.classList.add('hidden');
-            document.getElementById('statusInfo').innerText = "Vectorizado completado";
-        }
-
-        // --- UI ---
-        function processVector() {
-            processImagePipeline(true);
-        }
-
-        function setView(view) {
-            currentView = view;
-            
-            document.getElementById('imgOriginal').classList.add('hidden');
-            document.getElementById('canvasProcess').classList.add('hidden');
-            document.getElementById('vectorOutput').classList.add('hidden');
-            
-            ['tabOriginal', 'tabPreview', 'tabVector'].forEach(id => {
-                document.getElementById(id).classList.remove('bg-blue-500/10', 'text-blue-500', 'font-bold');
-                document.getElementById(id).classList.add('text-gray-400');
-            });
-
-            const activeBtn = document.getElementById('tab' + view.charAt(0).toUpperCase() + view.slice(1));
-            activeBtn.classList.remove('text-gray-400');
-            activeBtn.classList.add('bg-blue-500/10', 'text-blue-500', 'font-bold');
-
-            if(view === 'original') {
-                document.getElementById('imgOriginal').classList.remove('hidden');
-            } else if (view === 'preview') {
-                document.getElementById('canvasProcess').classList.remove('hidden');
-                // Si cambiamos a preview, asegurarnos de que se ve la imagen procesada
-                processImagePipeline(false);
-            } else {
-                document.getElementById('vectorOutput').classList.remove('hidden');
-            }
-        }
-
-        function setPreset(name) {
-            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-            
-            if(name === 'clean') { // Logo plano
-                document.getElementById('btnClean').classList.add('active');
-                config.colors = 8; config.blur = 2; config.smooth = 5; config.speckle = 32;
-            } else if (name === 'detailed') { // Arte
-                document.getElementById('btnDetailed').classList.add('active');
-                config.colors = 32; config.blur = 0; config.smooth = 1; config.speckle = 2;
-            } else if (name === 'sketch') { // Boceto suave
-                document.getElementById('btnSketch').classList.add('active');
-                config.colors = 2; config.blur = 5; config.smooth = 10; config.speckle = 50;
-            }
-            
-            // Actualizar sliders visualmente
-            document.getElementById('colors').value = config.colors; document.getElementById('valColors').innerText = config.colors;
-            document.getElementById('blur').value = config.blur; document.getElementById('valBlur').innerText = config.blur;
-            document.getElementById('smooth').value = config.smooth; document.getElementById('valSmooth').innerText = config.smooth;
-            document.getElementById('speckle').value = config.speckle; document.getElementById('valSpeckle').innerText = config.speckle + ' px';
-
-            if(rawImage.src) processVector();
-        }
-
-        function downloadSVG() {
-            if(!svgString) return;
-            const blob = new Blob([svgString], {type: 'image/svg+xml'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'vector_clean_polykit.svg';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        // --- LEMON SQUEEZY ---
-        const CHECKOUT_URL = "https://kroma.lemonsqueezy.com/buy/7bb9c431-8cf0-48ed-a2e7-ec6c537f86bc"; // Pon el tuyo aquí
+// --- LEMON SQUEEZY ---
+        // 1. Tu nuevo enlace de pago (Live)
+        const CHECKOUT_URL = "https://kroma.lemonsqueezy.com/checkout/buy/54baf5b1-29b6-4bad-9b36-0358750e333a"; 
 
         function goToPayment() {
             LemonSqueezy.Url.Open(CHECKOUT_URL);
@@ -529,16 +11,52 @@
                 if (event.event === 'Checkout.Success') {
                     unlockApp();
                     localStorage.setItem('isProUser', 'true');
-                    alert("Licencia Pro Activada.");
+                    alert("¡Gracias por tu compra! Licencia Pro Activada.");
                 }
             }
         }
 
-        function validateLicense() {
-            const key = prompt("Introduce tu clave de licencia:");
-            if (key && (key.startsWith("TEST") || key.length > 5)) {
-                unlockApp();
-                localStorage.setItem('isProUser', 'true');
+        // 2. Validación REAL contra la API de Lemon Squeezy
+        async function validateLicense() {
+            const key = prompt("Introduce tu clave de licencia de Lemon Squeezy:");
+            
+            if (!key || key.trim() === "") return;
+
+            // Mostramos el loader para que el usuario sepa que está cargando
+            const loader = document.getElementById('loader');
+            document.getElementById('loadingText').innerText = "Validando licencia con Lemon Squeezy...";
+            loader.classList.remove('hidden');
+
+            try {
+                // Hacemos la petición a la API pública de verificación de licencias
+                const response = await fetch('https://api.lemonsqueezy.com/v1/licenses/validate', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        license_key: key.trim()
+                    })
+                });
+
+                const data = await response.json();
+
+                // Verificamos la respuesta oficial del servidor
+                if (data.valid) {
+                    unlockApp();
+                    localStorage.setItem('isProUser', 'true');
+                    alert("¡Licencia validada con éxito! Disfruta de la versión Pro.");
+                } else {
+                    // Si no es válida, mostramos el error (expirada, desactivada, no existe...)
+                    alert("La licencia no es válida. Motivo: " + (data.error || "Clave incorrecta"));
+                }
+            } catch (error) {
+                console.error("Error validando licencia:", error);
+                alert("Hubo un error al conectar con el servidor de licencias. Revisa tu conexión.");
+            } finally {
+                // Ocultamos el loader al terminar
+                loader.classList.add('hidden');
             }
         }
 
@@ -548,9 +66,11 @@
         }
 
         window.onload = function() {
-            if(localStorage.getItem('isProUser') === 'true') unlockApp();
-            if(window.LemonSqueezy) window.LemonSqueezy.Setup({ eventHandler: window.lemonSqueezyUrl.eventHandler });
+            // Mantiene la app desbloqueada si ya se validó en una visita anterior
+            if(localStorage.getItem('isProUser') === 'true') {
+                unlockApp();
+            }
+            if(window.LemonSqueezy) {
+                window.LemonSqueezy.Setup({ eventHandler: window.lemonSqueezyUrl.eventHandler });
+            }
         };
-    </script>
-</body>
-</html>
